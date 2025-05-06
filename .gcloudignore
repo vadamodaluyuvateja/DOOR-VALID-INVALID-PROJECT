@@ -1,0 +1,11 @@
+.git
+.gitignore
+.env
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+ENV/
+
+# Keep model file
+!yolov8n_cls_door.pt

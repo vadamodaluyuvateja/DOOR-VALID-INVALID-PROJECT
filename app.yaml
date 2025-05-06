@@ -1,0 +1,13 @@
+runtime: python39
+instance_class: F4
+entrypoint: gunicorn -b :$PORT main:app
+
+handlers:
+- url: /static
+  static_dir: static
+  
+- url: /.*
+  script: auto
+
+env_variables:
+  PYTHONUNBUFFERED: 'TRUE'

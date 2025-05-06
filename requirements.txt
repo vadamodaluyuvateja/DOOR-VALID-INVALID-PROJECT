@@ -1,0 +1,7 @@
+ultralytics==8.3.108
+Flask
+Werkzeug
+gunicorn==21.2.0
+google-cloud-storage==2.14.0
+pillow==10.2.0
+numpy==1.26.4
