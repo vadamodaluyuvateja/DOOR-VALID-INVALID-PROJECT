@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Door Inspector</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #388E3C;
+            --danger: #F44336;
+            --gray: #f0f2f5;
+            --dark: #333;
+            --light: #fff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--gray);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            background-color: var(--light);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .upload-container {
+            display: flex;
+            flex-direction: column;
+            background-color: var(--light);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        
+        .upload-tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: 500;
+        }
+        
+        .tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .tab:not(.active):hover {
+            background-color: #eee;
+        }
+        
+        .tab-content {
+            padding: 30px;
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--primary);
+            background-color: rgba(76, 175, 80, 0.05);
+        }
+        
+        .upload-area i {
+            font-size: 48px;
+            color: #999;
+            margin-bottom: 15px;
+        }
+        
+        .upload-area h3 {
+            margin-bottom: 10px;
+            color: #666;
+        }
+        
+        .upload-area p {
+            color: #999;
+            margin-bottom: 15px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .path-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .btn-upload {
+            width: 100%;
+        }
+        
+        .result-container {
+            background-color: var(--light);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            display: none;
+        }
+        
+        .result-container.active {
+            display: block;
+        }
+        
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .result-icon {
+            font-size: 36px;
+            margin-right: 15px;
+            padding: 10px;
+            border-radius: 50%;
+        }
+        
+        .result-icon.pass {
+            color: var(--primary);
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+        
+        .result-icon.fail {
+            color: var(--danger);
+            background-color: rgba(244, 67, 54, 0.1);
+        }
+        
+        .result-title {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        
+        .result-subtitle {
+            color: #666;
+        }
+        
+        .result-details {
+            display: flex;
+            margin-top: 20px;
+        }
+        
+        .result-image {
+            flex: 1;
+            margin-right: 20px;
+            max-width: 400px;
+        }
+        
+        .result-image img {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .result-stats {
+            flex: 1;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .stat-item {
+            margin-bottom: 15px;
+        }
+        
+        .stat-label {
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #666;
+        }
+        
+        .stat-value {
+            font-size: 1.1rem;
+        }
+        
+        .confidence-bar {
+            height: 10px;
+            background-color: #eee;
+            border-radius: 5px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            border-radius: 5px;
+        }
+        
+        .confidence-fill.high {
+            background-color: var(--primary);
+        }
+        
+        .confidence-fill.medium {
+            background-color: #FFC107;
+        }
+        
+        .confidence-fill.low {
+            background-color: var(--danger);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px 0;
+        }
+        
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            color: var(--danger);
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Door Inspector</h1>
+            <p>Upload a door image to check if it passes inspection</p>
+        </header>
+        <div>
+         <input type="text" id="api-key" class="path-input" placeholder="Enter api key">
+        </div>
+        <div class="upload-container">
+            <div class="upload-tabs">
+                <div class="tab active" data-tab="upload">Upload Image</div>
+            </div>
+            
+            <div id="upload-tab" class="tab-content active">
+                <div id="upload-area" class="upload-area">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Drag & Drop Image Here</h3>
+                    <p>Or click to browse files</p>
+                    <input type="file" id="file-input" class="file-input" accept=".jpg,.jpeg,.png">
+                    <p id="file-name">No file selected</p>
+                </div>
+                <button id="upload-btn" class="btn btn-upload" disabled>Analyze Image</button>
+            </div>
+        </div>
+        
+        <div id="loading" class="loading">
+            <div class="loader"></div>
+            <p>Analyzing image...</p>
+        </div>
+        
+        <div id="error-message" class="error-message"></div>
+        
+        <div id="result-container" class="result-container">
+            <div class="result-header">
+                <div id="result-icon" class="result-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div>
+                    <h2 id="result-title" class="result-title">Door Inspection Result</h2>
+                    <p id="result-subtitle" class="result-subtitle">Analysis completed</p>
+                </div>
+            </div>
+            
+            <div class="result-details">
+                <div class="result-image">
+                    <img id="result-img" src="" alt="Analyzed door">
+                </div>
+                <div class="result-stats">
+                    <div class="stat-item">
+                        <div class="stat-label">Inspection Result</div>
+                        <div id="prediction-result" class="stat-value">-</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Confidence Level</div>
+                        <div id="confidence-value" class="stat-value">-</div>
+                        <div class="confidence-bar">
+                            <div id="confidence-fill" class="confidence-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Processing Time</div>
+                        <div id="processing-time" class="stat-value">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Door Inspector System © 2025</p>
+        </footer>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // File upload handling
+            const fileInput = document.getElementById('file-input');
+            const uploadArea = document.getElementById('upload-area');
+            const fileName = document.getElementById('file-name');
+            const uploadBtn = document.getElementById('upload-btn');
+            
+            // Upload area click event
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // Drag and drop events
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#4CAF50';
+                uploadArea.style.backgroundColor = 'rgba(76, 175, 80, 0.1)';
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = '#ccc';
+                uploadArea.style.backgroundColor = 'transparent';
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#ccc';
+                uploadArea.style.backgroundColor = 'transparent';
+                
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    updateFileName();
+                }
+            });
+            
+            // File input change
+            fileInput.addEventListener('change', updateFileName);
+            
+            function updateFileName() {
+                if (fileInput.files.length) {
+                    fileName.textContent = fileInput.files[0].name;
+                    uploadBtn.disabled = false;
+                } else {
+                    fileName.textContent = 'No file selected';
+                    uploadBtn.disabled = true;
+                }
+            }
+            
+            // Upload button click
+            const apiKey = "teja1234";
+            uploadBtn.addEventListener('click', () => {
+                const keyInput = document.getElementById('api-key');
+                const keyPath = keyInput.value.trim();
+                if (fileInput.files.length && apiKey === keyPath) {
+                    uploadFile(fileInput.files[0]);
+                } else {
+                    showError('Please enter a valid api-key');
+                }
+            });
+            
+            // Show loading state
+            function showLoading() {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('result-container').style.display = 'none';
+                document.getElementById('error-message').style.display = 'none';
+            }
+            
+            // Hide loading state
+            function hideLoading() {
+                document.getElementById('loading').style.display = 'none';
+            }
+            
+            // Show error message
+            function showError(message) {
+                const errorElement = document.getElementById('error-message');
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+                hideLoading();
+            }
+            
+            // Upload file function
+            function uploadFile(file) {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                showLoading();
+                
+                fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    hideLoading();
+                    if (data.success) {
+                        displayResults(data);
+                    } else {
+                        showError(data.error || 'An error occurred during processing');
+                    }
+                })
+                .catch(error => {
+                    hideLoading();
+                    showError('Network error: ' + error.message);
+                });
+            }
+            
+            // Display results
+            function displayResults(data) {
+                const resultContainer = document.getElementById('result-container');
+                const resultImg = document.getElementById('result-img');
+                const resultIcon = document.getElementById('result-icon');
+                const resultTitle = document.getElementById('result-title');
+                const resultSubtitle = document.getElementById('result-subtitle');
+                const predictionResult = document.getElementById('prediction-result');
+                const confidenceValue = document.getElementById('confidence-value');
+                const confidenceFill = document.getElementById('confidence-fill');
+                const processingTime = document.getElementById('processing-time');
+                
+                // Set image source
+                resultImg.src = data.file_path;
+                
+                // Set prediction result
+                predictionResult.textContent = data.prediction;
+                
+                // Set confidence
+                confidenceValue.textContent = data.confidence;
+                
+                // Remove previous confidence classes
+                confidenceFill.classList.remove('high', 'medium', 'low');
+                
+                // Parse confidence percentage
+                const confidencePercent = parseFloat(data.confidence.replace('%', ''));
+                
+                // Set confidence bar width
+                confidenceFill.style.width = confidencePercent + '%';
+                
+                // Set confidence bar color
+                if (confidencePercent >= 80) {
+                    confidenceFill.classList.add('high');
+                } else if (confidencePercent >= 50) {
+                    confidenceFill.classList.add('medium');
+                } else {
+                    confidenceFill.classList.add('low');
+                }
+                
+                // Set processing time
+                processingTime.textContent = data.processing_time;
+                
+                // Set result icon and title based on prediction
+                resultIcon.innerHTML = '';
+                if (data.prediction.toLowerCase() === 'pass') {
+                    resultIcon.classList.remove('fail');
+                    resultIcon.classList.add('pass');
+                    resultIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                    resultTitle.textContent = 'Door Passed Inspection';
+                    resultSubtitle.textContent = 'This door meets all the required standards';
+                } else {
+                    resultIcon.classList.remove('pass');
+                    resultIcon.classList.add('fail');
+                    resultIcon.innerHTML = '<i class="fas fa-times-circle"></i>';
+                    resultTitle.textContent = 'Door Failed Inspection';
+                    resultSubtitle.textContent = 'This door does not meet the required standards';
+                }
+                
+                // Show result container
+                resultContainer.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
